@@ -7,14 +7,14 @@ use reqwest::{
     blocking::Client,
     header::{HeaderMap, ACCEPT, COOKIE},
 };
+use securestore::{KeySource, SecretsManager};
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use std::{collections::HashMap, fs::read_to_string};
 
 const YEAR: i32 = 2022;
 const LEADERBOARDS: [i32; 2] = [649_161, 1_027_450];
 const CACHEFILE: &str = ".aoc.json";
-const SESSION: &str = "53616c7465645f5f85d0c64d310ec15335851e16d04829fa340ffc\
-    6c0558a648bec9c9990e22cd1c9b46910f3a91557ab5bafbbab2a76694e87847e6110764bc";
 
 // URL = 'https://adventofcode.com/2022/leaderboard/private/view/649161.json'
 
@@ -71,8 +71,12 @@ fn get_json(leaderbord: i32) -> Aoc {
         "https://adventofcode.com/{}/leaderboard/private/view/{}.json",
         YEAR, leaderbord
     );
+    let key_path = Path::new(".secrets.key");
+    let sman = SecretsManager::load("secrets.json", KeySource::Path(key_path))
+        .expect("Failed to load secrets");
+    let session = sman.get("session").expect("Couldn't get session cookie");
     let mut headers = HeaderMap::new();
-    headers.insert(COOKIE, format!("session={};", SESSION).parse().unwrap());
+    headers.insert(COOKIE, format!("session={};", session).parse().unwrap());
     headers.insert(ACCEPT, "application/json".parse().unwrap());
     let res = client.get(url).headers(headers).send().unwrap();
     let text = res.text().unwrap();

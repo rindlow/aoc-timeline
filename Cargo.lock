@@ -18,6 +18,7 @@ dependencies = [
  "chrono",
  "itertools",
  "reqwest",
+ "securestore",
  "serde",
  "serde_json",
 ]
@@ -710,6 +711,18 @@ name = "scratch"
 version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9c8132065adcfd6e02db789d9285a0deb2f3fcb04002865ab67d5fb103533898"
+
+[[package]]
+name = "securestore"
+version = "0.100.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffda2694eca0e525be62fb62660ec4e21995296f527c0bb83cf51a6ab8a80d2e"
+dependencies = [
+ "base64",
+ "openssl",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "security-framework"
