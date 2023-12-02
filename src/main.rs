@@ -6,17 +6,16 @@ use itertools::Itertools;
 use reqwest::{
     blocking::Client,
     header::{HeaderMap, ACCEPT, COOKIE},
+    StatusCode,
 };
 use securestore::{KeySource, SecretsManager};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::{collections::HashMap, fs::read_to_string};
 
-const YEAR: i32 = 2022;
+const YEAR: i32 = 2023;
 const LEADERBOARDS: [i32; 2] = [649_161, 1_027_450];
 const CACHEFILE: &str = ".aoc.json";
-
-// URL = 'https://adventofcode.com/2022/leaderboard/private/view/649161.json'
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct Star {
@@ -79,6 +78,13 @@ fn get_json(leaderbord: i32) -> Aoc {
     headers.insert(COOKIE, format!("session={};", session).parse().unwrap());
     headers.insert(ACCEPT, "application/json".parse().unwrap());
     let res = client.get(url).headers(headers).send().unwrap();
+    if res.status() != StatusCode::OK {
+        println!("Fetch failed, cookie probably outdated.");
+        println!(
+            "Set a new cookie with 'ssclient set session <COOKIE>' ('cargo install ssclient')."
+        );
+        std::process::exit(1);
+    }
     let text = res.text().unwrap();
     let aoc: Aoc = serde_json::from_str(&text).unwrap();
     cache.insert(
