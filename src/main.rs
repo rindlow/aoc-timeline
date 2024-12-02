@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::{collections::HashMap, fs::read_to_string};
 
-const YEAR: i32 = 2023;
+const YEAR: i32 = 2024;
 const LEADERBOARDS: [i32; 2] = [649_161, 1_027_450];
 const CACHEFILE: &str = ".aoc.json";
 
