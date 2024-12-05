@@ -1,7 +1,8 @@
 #![warn(clippy::pedantic)]
 #![allow(clippy::must_use_candidate)]
 #![allow(clippy::missing_panics_doc)]
-use chrono::{DateTime, Duration, Local, TimeZone};
+use chrono::{DateTime, Datelike, Duration, Local, TimeZone};
+use clap::Parser;
 use itertools::Itertools;
 use reqwest::{
     blocking::Client,
@@ -145,7 +146,7 @@ fn timeline(members: &HashMap<String, Member>) -> Vec<Report> {
     timeline
 }
 
-fn report(leaderbord: i32) {
+fn report(leaderbord: i32, all: bool) {
     println!("\n{}", String::from_utf8(vec![b'#'; 70]).unwrap());
     let aoc = get_json(leaderbord);
     let max_score = aoc.members.len();
@@ -153,27 +154,31 @@ fn report(leaderbord: i32) {
     let mut day = String::new();
     let mut score: HashMap<String, usize> = HashMap::new();
     let mut total_score: HashMap<String, usize> = HashMap::new();
+    let today = chrono::offset::Local::now().day();
 
     for event in timeline(&aoc.members) {
         let event_day = format!("{}", event.timestamp.format("%B %e"));
-        if event_day != day {
-            println!("\n{}", event_day);
-            day = event_day;
-        }
+
         score
             .entry(event.star.clone())
             .and_modify(|e| *e -= 1)
             .or_insert(max_score);
 
         let star_score = score[&event.star];
-        println!(
-            "  {} {:25}\t{} [{}] ({})",
-            event.timestamp.time(),
-            event.member,
-            event.star,
-            star_score,
-            duration_string(event.elapsed)
-        );
+        if all || event.timestamp.day() == today {
+            if event_day != day {
+                println!("\n{}", event_day);
+                day = event_day;
+            }
+            println!(
+                "  {} {:25}\t{} [{}] ({})",
+                event.timestamp.time(),
+                event.member,
+                event.star,
+                star_score,
+                duration_string(event.elapsed)
+            );
+        }
 
         total_score
             .entry(event.member.clone())
@@ -186,8 +191,15 @@ fn report(leaderbord: i32) {
     }
 }
 
+#[derive(Parser)]
+struct Cli {
+    #[arg(short, long, action)]
+    all: bool,
+}
+
 fn main() {
+    let args = Cli::parse();
     for leaderbord in LEADERBOARDS {
-        report(leaderbord);
+        report(leaderbord, args.all);
     }
 }
