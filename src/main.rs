@@ -100,7 +100,15 @@ fn get_json(leaderbord: i32) -> Aoc {
 }
 
 fn duration_string(d: Duration) -> String {
-    if d.num_hours() > 0 {
+    if d.num_days() > 0 {
+        format!(
+            "{}d {}:{:02}:{:02}",
+            d.num_days(),
+            d.num_hours() % 24,
+            d.num_minutes() % 60,
+            d.num_seconds() % 60
+        )
+    } else if d.num_hours() > 0 {
         format!(
             "{}:{:02}:{:02}",
             d.num_hours(),
