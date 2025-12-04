@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use std::path::Path;
 use std::{collections::HashMap, fs::read_to_string};
 
-const YEAR: i32 = 2024;
+const YEAR: i32 = 2025;
 const LEADERBOARDS: [i32; 2] = [649_161, 1_027_450];
 const CACHEFILE: &str = ".aoc.json";
 
@@ -24,7 +24,7 @@ struct Star {
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 struct Member {
-    global_score: i32,
+    // global_score: i32,
     name: Option<String>,
     stars: i32,
     id: i32,
@@ -53,9 +53,9 @@ struct Report {
     star: String,
 }
 
-fn get_json(leaderbord: i32) -> Aoc {
+fn get_json(leaderbord: i32, flush_cache: bool) -> Aoc {
     let mut cache = Cache::new();
-    if std::path::Path::new(CACHEFILE).exists() {
+    if !flush_cache && std::path::Path::new(CACHEFILE).exists() {
         cache = serde_json::from_str(&read_to_string(CACHEFILE).unwrap()).unwrap();
         if cache.contains_key(&leaderbord) {
             let entry = cache.get(&leaderbord).unwrap();
@@ -154,9 +154,9 @@ fn timeline(members: &HashMap<String, Member>) -> Vec<Report> {
     timeline
 }
 
-fn report(leaderbord: i32, all: bool) {
+fn report(leaderbord: i32, all: bool, flush_cache: bool) {
     println!("\n{}", String::from_utf8(vec![b'#'; 70]).unwrap());
-    let aoc = get_json(leaderbord);
+    let aoc = get_json(leaderbord, flush_cache);
     let max_score = aoc.members.len();
 
     let mut day = String::new();
@@ -203,11 +203,13 @@ fn report(leaderbord: i32, all: bool) {
 struct Cli {
     #[arg(short, long, action)]
     all: bool,
+    #[arg(short, long, action)]
+    flush_cache: bool,
 }
 
 fn main() {
     let args = Cli::parse();
     for leaderbord in LEADERBOARDS {
-        report(leaderbord, args.all);
+        report(leaderbord, args.all, args.flush_cache);
     }
 }
